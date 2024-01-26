@@ -2,15 +2,17 @@ import os
 import boto3
 import requests
 import time
+import logging
+import sys
 
-# Set your AWS credentials (or use other methods to configure credentials)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
 aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
 region_name = os.environ.get('AWS_REGION', 'eu-central-1')
 zone_id = os.environ.get('ROUTE53_ZONE')
-# todo allow multiple records
 records = os.environ.get('ROUTE53_RECORDS')
 # split env by ","
+# todo add try and catch exceptions
 records = records.split(',')
 
 def convert_to_record_set_format(name):
