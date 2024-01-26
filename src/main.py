@@ -87,15 +87,17 @@ def update_route53_record(zone_id, record_name, new_ip):
         print(f"Error updating Route 53 record: {e}")
         return False
 
-while True:
-    current_ip = get_current_ip()
-    for record_name in records:
-        route53_ip = get_route53_ip(zone_id, record_name)
 
-        if current_ip != route53_ip:
-            print("current: " + current_ip + " old: " + route53_ip + " for record: " + record_name + " updating to current ip ...")
-            update_route53_record(zone_id, record_name, current_ip)
-        else:
-            print("current: " + current_ip + " old: " + route53_ip + " for record: " + record_name + " nothing to do ...")
-    print("sleeping a while")
-    time.sleep(300)  # Sleep for 5 minutes before checking again
+if __name__ == "__main__":
+    while True:
+        current_ip = get_current_ip()
+        for record_name in records:
+            route53_ip = get_route53_ip(zone_id, record_name)
+
+            if current_ip != route53_ip:
+                print("current: " + current_ip + " old: " + route53_ip + " for record: " + record_name + " updating to current ip ...")
+                update_route53_record(zone_id, record_name, current_ip)
+            else:
+                print("current: " + current_ip + " old: " + route53_ip + " for record: " + record_name + " nothing to do ...")
+        print("sleeping a while")
+        time.sleep(300)  # Sleep for 5 minutes before checking again
