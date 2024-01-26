@@ -2,18 +2,18 @@ import os
 import boto3
 import requests
 import time
-import logging
-import sys
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
 aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
 region_name = os.environ.get('AWS_REGION', 'eu-central-1')
 zone_id = os.environ.get('ROUTE53_ZONE')
 records = os.environ.get('ROUTE53_RECORDS')
 # split env by ","
-# todo add try and catch exceptions
-records = records.split(',')
+try:
+    records = records.split(',')
+except Exception as e:
+    print("Error with provided ROUTE53_RECORDS environment " + str(e))
+    exit(1)
 
 def convert_to_record_set_format(name):
     return name.replace('*', '\\052')
@@ -93,11 +93,13 @@ if __name__ == "__main__":
         current_ip = get_current_ip()
         for record_name in records:
             route53_ip = get_route53_ip(zone_id, record_name)
-
-            if current_ip != route53_ip:
-                print("current: " + current_ip + " old: " + route53_ip + " for record: " + record_name + " updating to current ip ...")
-                update_route53_record(zone_id, record_name, current_ip)
+            if route53_ip == None:
+                print("No valid IP found for " + record_name + " in Zone " + zone_id)
             else:
-                print("current: " + current_ip + " old: " + route53_ip + " for record: " + record_name + " nothing to do ...")
+                if current_ip != route53_ip:
+                    print("current: " + current_ip + " old: " + route53_ip + " for record: " + record_name + " updating to current ip ...")
+                    update_route53_record(zone_id, record_name, current_ip)
+                else:
+                    print("current: " + current_ip + " old: " + route53_ip + " for record: " + record_name + " nothing to do ...")
         print("sleeping a while")
         time.sleep(300)  # Sleep for 5 minutes before checking again
