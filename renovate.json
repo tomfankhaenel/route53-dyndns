@@ -1,10 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
-  "automerge": true,
-  "rangeStrategy": "nopatch",
-  "rangeFallback": "nopatch",
-  "nopatch": {
-    "ignore": ["minor", "major"]
-  }
+  "packageRules": [
+      {
+        "matchUpdateTypes": ["patch"],
+        "automerge": true
+      }
+    ]
 }
