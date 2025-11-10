@@ -19,10 +19,32 @@ def convert_to_record_set_format(name):
     return name.replace('*', '\\052')
 
 def get_current_ip():
-    # Use a service like 'httpbin' to get the public IP address
-    response = requests.get('https://httpbin.org/ip')
-    current_ip = response.json().get('origin', '')
-    return current_ip
+    try:
+        response = requests.get('https://httpbin.org/ip', timeout=30)
+        response.raise_for_status()
+        data = response.json()
+        return data.get('origin', '').split(',')[0].strip()
+    except (requests.exceptions.RequestException, ValueError) as e:
+        print(f"Error fetching public IP from httpbin.org: {e}")
+
+        # Try fallback IP services
+        for service in [
+            "https://api.ipify.org?format=json",
+            "https://ifconfig.me/all.json",
+            "https://ipinfo.io/json"
+        ]:
+            try:
+                r = requests.get(service, timeout=30)
+                r.raise_for_status()
+                data = r.json()
+                ip = data.get('ip') or data.get('ip_addr') or data.get('origin')
+                if ip:
+                    return ip.strip()
+            except Exception as e2:
+                print(f"Fallback {service} failed: {e2}")
+
+        print("Failed to get public IP from all sources.")
+        return None
 
 def get_route53_ip(zone_id, record_name):
 
