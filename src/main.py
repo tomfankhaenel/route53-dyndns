@@ -7,13 +7,20 @@ aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
 aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
 region_name = os.environ.get('AWS_REGION', 'eu-central-1')
 zone_id = os.environ.get('ROUTE53_ZONE')
-records = os.environ.get('ROUTE53_RECORDS')
-# split env by ","
-try:
-    records = records.split(',')
-except Exception as e:
-    print("Error with provided ROUTE53_RECORDS environment " + str(e))
-    exit(1)
+
+
+def parse_records(raw):
+    """Split the ROUTE53_RECORDS env value into a clean list of record names.
+
+    Returns an empty list when nothing usable was provided so importing this
+    module never has side effects (important for tests and reuse).
+    """
+    if not raw:
+        return []
+    return [r.strip() for r in raw.split(',') if r.strip()]
+
+
+records = parse_records(os.environ.get('ROUTE53_RECORDS'))
 
 def convert_to_record_set_format(name):
     return name.replace('*', '\\052')
@@ -111,6 +118,9 @@ def update_route53_record(zone_id, record_name, new_ip):
 
 
 if __name__ == "__main__":
+    if not records:
+        print("Error: no records provided in the ROUTE53_RECORDS environment variable")
+        exit(1)
     while True:
         current_ip = get_current_ip()
         for record_name in records:
